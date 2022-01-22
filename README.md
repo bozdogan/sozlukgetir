@@ -1,14 +1,16 @@
 # Sözlükgetir Dictionary Crawler
 
-Sözlükgetir is a crawler/fetcher for the [Turkish Language Association](https://www.tdk.gov.tr/)'s (TDK) [online Turkish dictionary](https://sozluk.gov.tr/)[^GTS].
+Sözlükgetir is a crawler/fetcher for the Turkish Language Association's[^1] online Turkish dictionary[^2].
 
 I plan to add support for alternative dictionaries for Turkish language
 (Wictionary/Vikisözlük).
 
-[^GTS]: Güncel Türkçe Sözlük
+[^1]: _tr._ Türk Dil Kurumu (TDK), [official website](https://www.tdk.gov.tr/)
+[^2]: Current Turkish Dictionary (_tr._ Güncel Türkçe Sözlük), [link](https://sozluk.gov.tr/)
 
 
 ## Dependencies
+
 None other than Python!
 
 
