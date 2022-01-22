@@ -20,7 +20,7 @@ def fetch_word_list():
         return list(map(lambda it: it["madde"], data))
 
 def fetch_details(word):
-    word = word.replace("İ", "i").lower()
+    word = word.replace("İ", "i").replace("I", "ı").lower()
     url_gts = LOCATIONS["gts"].format(madde=urllib.parse.quote(word, encoding="utf-8"))
     url_yazim = LOCATIONS["yazim"].format(madde=urllib.parse.quote(word, encoding="utf-8"))
     
