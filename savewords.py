@@ -1,5 +1,6 @@
 import os
 from os import path
+import sys
 import json
 from urllib.parse import quote
 import threading
@@ -10,7 +11,10 @@ SAVEDIR = "sozluk"
 os.makedirs(SAVEDIR, exist_ok=True)
 
 wordlist_file = path.join(SAVEDIR, "tdk-autocomplete.json")
-if not path.exists(wordlist_file):
+if path.exists(wordlist_file):
+    with open(wordlist_file, encoding="utf-8") as fp:
+        wordlist = json.load(fp)
+else:
     print("Fetching word list")
     wordlist = sozlukgetir.fetch_word_list()
     with open(wordlist_file, "w", encoding="utf-8") as fp:
@@ -21,31 +25,45 @@ error_log_file = path.join(SAVEDIR, "savewords-errors.log")
 
 successList = []
 errorList = []
+skippedWords = []
 os.makedirs(path.join(SAVEDIR, "words"), exist_ok=True)
 
-num_threads = 10
+num_threads = 12
 total_items = len(wordlist)
 item_per_thread = total_items//num_threads
 leftover_items = total_items - item_per_thread*num_threads
+
+threads = []
+thread_lock = threading.Lock()
+active_threads = num_threads
 
 print("Total items:", total_items)
 print("Item per thread:", item_per_thread)
 print("Leftover items:", leftover_items)
 
 def progress_bar(title, done, total):
-    os.system("title %s %%%.03f" % (title, done/total))
+    global active_threads
+    os.system("title %s %s %%%.03f" % (active_threads, title, done/total))
 
 def log_error(word, error):
     with open(error_log_file, "a", encoding="utf-8") as fp:
         fp.write(f"{word} ::\t{error}\n")
 
 def do_fetch(wordlist):
+    global active_threads
     for i, word in enumerate(wordlist):
         progress_bar("saving -", i, item_per_thread)
         
         result = sozlukgetir.fetch_details(word)
         if "error" in result:    
             errorList.append((word, result["error"]))
+            if result["error"] == "HTTPError" and result["code"] == 503:
+                skippedWords.extend(wordlist[i:])
+                print("SERVER OVERLOADED")
+                with thread_lock:
+                    active_threads -= 1
+                sys.exit()
+            
             log_error(word, result)
             print(f"ERROR({word}): {result}")
         else:
@@ -53,9 +71,7 @@ def do_fetch(wordlist):
             _path = path.join(SAVEDIR, "words", f"{quote(word)}.json")
             with open(_path, "w", encoding="utf-8") as fp:
                 json.dump(result, fp, ensure_ascii=False)
-            #print(f"  Saved: {word}\" at '{_path}'")
 
-threads = []
 for i in range(num_threads):
     # NOTE(bora): If items don't divide equally, leftover items
     # are added to the first thread.
@@ -63,7 +79,6 @@ for i in range(num_threads):
     range_end = (i + 1)*item_per_thread + leftover_items
     
     t = threading.Thread(target=do_fetch, args=(wordlist[range_start:range_end],))
-    #t.daemon = True
     threads.append(t)
 
 print()
@@ -82,7 +97,10 @@ print()
 print("Job done")
 print("Total words saved:", len(successList))
 print("Total errors:", len(errorList))
+print("SKIPPED WORDS::\n" + "\n".join(skippedWords))
 
-with open(error_log_file, "a", encoding="utf-8") as fp: 
+with open(error_log_file, "a", encoding="utf-8") as fp:
+    if skippedWords:
+        fp.write("SKIPPED WORDS::\n" + "\n".join(skippedWords))
     fp.write("\n\n")
-    print("Error log saved: '{error_log_file}'")    
+    print(f"Error log saved: '{error_log_file}'")    
