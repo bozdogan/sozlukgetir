@@ -23,16 +23,16 @@ def fetch_details(word):
     url_gts = LOCATIONS["gts"].format(madde=urllib.parse.quote(word, encoding="utf-8"))
     url_yazim = LOCATIONS["yazim"].format(madde=urllib.parse.quote(word, encoding="utf-8"))
     
-    def _get(url):
+    def _get(url, ignore_errors=False):
         with request.urlopen(url) as res:
             data = json.loads(res.read())
-            if "error" in data:  # NOTE: {'error': 'Sonuç bulunamadı'}
+            if not ignore_errors and "error" in data:  # NOTE: {'error': 'Sonuç bulunamadı'}
                 raise Exception("No such result")
             return data
     try:
         result = {}
         result["gts"] = _get(url_gts)
-        result["yazim"] = _get(url_yazim)
+        result["yazim"] = _get(url_yazim, ignore_errors=True)
     except Exception as e:
         # TODO(bora): User shouldn't see this
         result = {"error": e}
