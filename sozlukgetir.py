@@ -1,5 +1,5 @@
-from typing import cast
 from urllib import request
+from urllib.error import URLError, HTTPError
 import urllib.parse
 import json
 import ssl
@@ -33,6 +33,10 @@ def fetch_details(word):
         result = {}
         result["gts"] = _get(url_gts)
         result["yazim"] = _get(url_yazim, ignore_errors=True)
+    except HTTPError as e:
+        result = {"error": "HTTPError", "code": e.code}
+    except URLError as e:
+        result = {"error": "URLError", "reason": e.reason}
     except Exception as e:
         # TODO(bora): User shouldn't see this
         result = {"error": e}
