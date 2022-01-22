@@ -22,8 +22,22 @@ os.makedirs(path.join(SAVEDIR, "words"), exist_ok=True)
 successList = []
 errorList = []
 
+num_threads = 8
+total_items = len(wordList)
+item_per_thread = total_items//num_threads
+leftover_items = total_items - item_per_thread*num_threads
+
+print("Total items:", total_items)
+print("Item per thread:", item_per_thread)
+print("Leftover items:", leftover_items)
+
+def progress_bar(title, done, total):
+    os.system("title %s %%%.03f" % (title, done/total))
+
 def do_fetch(wordList):
-    for word in wordList:
+    for i, word in enumerate(wordList):
+        progress_bar("saving -", i, item_per_thread)
+        
         result = sozlukgetir.fetch_details(word)
         if "error" in result:    
             errorList.append((word, result["error"]))
@@ -33,16 +47,7 @@ def do_fetch(wordList):
             _path = path.join(SAVEDIR, "words", f"{quote(word)}.json")
             with open(_path, "w", encoding="utf-8") as fp:
                 json.dump(result, fp, ensure_ascii=False)
-            print(f"\"  Saved: {word}\" at '{_path}'")
-
-num_threads = 10
-total_items = len(wordList)
-item_per_thread = total_items//num_threads
-leftover_items = total_items - item_per_thread*num_threads
-
-print("Total items:", total_items)
-print("Item per thread:", item_per_thread)
-print("Leftover items:", leftover_items)
+            #print(f"  Saved: {word}\" at '{_path}'")
 
 threads = []
 for i in range(num_threads):
