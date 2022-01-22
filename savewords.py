@@ -42,8 +42,17 @@ print("Item per thread:", item_per_thread)
 print("Leftover items:", leftover_items)
 
 def progress_bar(title, done, total):
-    global active_threads
-    os.system("title %s %s %%%.03f" % (active_threads, title, done/total))
+    if total == 0:
+        return
+    bar_length = 40
+    ratio = done/total
+    bar = "█"*int(bar_length*ratio) + "░"*int(bar_length*(1 - ratio))
+    os.system(f"title {active_threads} threads {title} {bar} %{(ratio*100):.3f}")
+
+def update_progress():
+    progress_bar("saving -",
+            len(successList) + len(errorList),
+            total_items)
 
 def log_error(word, error):
     with open(error_log_file, "a", encoding="utf-8") as fp:
@@ -52,7 +61,7 @@ def log_error(word, error):
 def do_fetch(wordlist):
     global active_threads
     for i, word in enumerate(wordlist):
-        progress_bar("saving -", i, item_per_thread)
+        update_progress()
         
         result = sozlukgetir.fetch_details(word)
         if "error" in result:    
@@ -97,7 +106,8 @@ print()
 print("Job done")
 print("Total words saved:", len(successList))
 print("Total errors:", len(errorList))
-print("SKIPPED WORDS::\n" + "\n".join(skippedWords))
+if skippedWords:
+    print(f"{len(skippedWords)} WORDS SKIPPED")
 
 with open(error_log_file, "a", encoding="utf-8") as fp:
     if skippedWords:
