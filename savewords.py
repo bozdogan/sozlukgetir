@@ -4,8 +4,11 @@ import sys
 import json
 from urllib.parse import quote
 import threading
+import ssl
 
 import sozlukgetir
+
+ssl._create_default_https_context = ssl._create_unverified_context
 
 SAVEDIR = "sozluk"
 os.makedirs(SAVEDIR, exist_ok=True)

@@ -4,7 +4,6 @@ import urllib.parse
 import json
 import ssl
 
-ssl._create_default_https_context = ssl._create_unverified_context
 LOCATIONS = {
     "autocomplete": "https://sozluk.gov.tr/autocomplete.json",
     "autocompleteSapka": "https://sozluk.gov.tr/assets/js/autocompleteSapka.json",
@@ -45,10 +44,13 @@ def fetch_details(word):
     return result
 
 if __name__ == "__main__":
-    # print("Fetching autocomplete word list")
-    # wordList = fetch_word_list()
+    ssl._create_default_https_context = ssl._create_unverified_context
+    print("Fetching autocomplete word list")
+    wordList = fetch_word_list()
 
-    # print("WORDS::\n")
-    # print(wordList)
-
-    print(fetch_details("çıkmak"))
+    print("WORDS::\n")
+    print(", ".join(wordList[:20]) + "\n  ...\n" + ", ".join(wordList[-10:]))
+    print()
+    
+    word_cikmak = fetch_details(wordList[19049])
+    print(word_cikmak)
