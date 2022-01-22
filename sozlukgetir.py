@@ -10,14 +10,15 @@ LOCATIONS = {
     "yazim": "https://sozluk.gov.tr/yazim?ara={query}"
 }
 
-def fetchWordList(url=LOCATIONS["autocomplete"]):
+def fetch_word_list(url=LOCATIONS["autocomplete"]):
     with request.urlopen(url) as res:
         data = json.loads(res.read())
         return list(map(lambda it: it["madde"], data))
 
+
 if __name__ == "__main__":
     print("Fetching autocomplete word list")
-    wordList = fetchWordList()
+    wordList = fetch_word_list()
 
     print("WORDS::\n")
     print(wordList)
