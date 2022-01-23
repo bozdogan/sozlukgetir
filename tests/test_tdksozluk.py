@@ -4,6 +4,7 @@ import unittest
 import urllib.request
 
 from context import sozlukgetir, _abspath, _url
+from sozlukgetir import tdksozluk, wordinfo
 
 
 class TestTDKSozluk(unittest.TestCase):
@@ -35,10 +36,25 @@ class TestTDKSozluk(unittest.TestCase):
             expected_word_list = json.load(response)
 
         self.sozluk.locations["wordlist"] = _wordlist_url
-        self.assertEqual(wordlist, expected_word_list)        
+        self.assertEqual(wordlist, expected_word_list)
+
+    
+    def test_querying_word(self):
+        word = self.sozluk.query_word("sözlük")
+        word_expected = wordinfo.Word(
+            word='sözlük',
+            is_proper=False,
+            is_loanword=False,
+            origin=None,
+            meanings=[
+                wordinfo.Meaning(
+                    meaning='Bir dilin bütün veya belli bir çağda kullanılmış kelime ve deyimlerini alfabe sırasına göre alarak tanımlarını yapan, açıklayan, başka dillerdeki karşılıklarını veren eser, lügat',
+                    is_verb=False,
+                    properties=['isim'])])
+        self.assertEqual(word, word_expected)
     
     def _combine_word_info(self, word):
-        lowercase_word = word.replace("İ", "i").replace("I", "ı").lower()
+        lowercase_word = tdksozluk.normalize_query(word)
         details = sozlukgetir.fetch_details(word)
 
         with urllib.request.urlopen(self.sozluk.locations["query"].format(query=lowercase_word)) as response:
