@@ -8,5 +8,8 @@ sys.path.insert(0,
 import sozlukgetir
 
 
+def _abspath(localpath):
+    return pathlib.Path(__file__).parent.resolve()/localpath
+
 def _url(localpath):
-    return (pathlib.Path(__file__).parent.resolve()/localpath).as_uri()
+    return (_abspath(localpath).as_uri())
