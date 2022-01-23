@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Sözlük Sorgula</title>
+  <style>
+    * { margin: 0; font: 16px Inter, Arial; }
+    p { background-color: #ccc; padding: 3rem; text-align: center; }
+    pre { margin: 1rem; font: 14px "Jetbrains Mono"; }
+  </style>
+</head>
+<body>
+  <p>
+    <input id="text">
+    <button id="submit">Ara</button>
+  </p>
+  <pre id="gts">
+    GTS
+  </pre>
+  <hr>
+  <pre id="yazim">
+    YAZIM
+  </pre>
+
+  <script>
+    const inputTx = document.querySelector("#text");
+    const submitBt = document.querySelector("#submit");
+    const gtsLb = document.querySelector("#gts");
+    const yazimLb = document.querySelector("#yazim");
+
+    const do_the_thing = (e) => {
+      fetch(`https://sozluk.gov.tr/gts?ara=${inputTx.value.trim()}`)
+        .then(res => res.json())
+        .then(data => {
+          gtsLb.innerText = JSON.stringify(data, null, 2);
+        });
+      fetch(`https://sozluk.gov.tr/yazim?ara=${inputTx.value.trim()}`)
+        .then(res => res.json())
+        .then(data => {
+          yazimLb.innerText = JSON.stringify(data, null, 2);
+        });
+    };
+
+    inputTx.addEventListener("keyup", (e) => {
+      if(e.key === "Enter") {
+        do_the_thing(e);
+      }
+    });
+    submitBt.addEventListener("click", do_the_thing)
+  </script>
+</body>
+</html>
