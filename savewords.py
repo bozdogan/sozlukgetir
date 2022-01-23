@@ -2,7 +2,6 @@ import os
 from os import path
 import sys
 import json
-from urllib.parse import quote
 import threading
 import ssl
 
@@ -31,7 +30,7 @@ errorList = []
 skippedWords = []
 os.makedirs(path.join(SAVEDIR, "words"), exist_ok=True)
 
-num_threads = 12
+num_threads = 8
 total_items = len(wordlist)
 item_per_thread = total_items//num_threads
 leftover_items = total_items - item_per_thread*num_threads
@@ -44,13 +43,14 @@ print("Total items:", total_items)
 print("Item per thread:", item_per_thread)
 print("Leftover items:", leftover_items)
 
+
 def progress_bar(title, done, total):
     if total == 0:
         return
     bar_length = 40
     ratio = done/total
     bar = "█"*int(bar_length*ratio) + "░"*int(bar_length*(1 - ratio))
-    os.system(f"title {active_threads} threads {title} {bar} %{(ratio*100):.3f}")
+    os.system(f"title {active_threads} thr {title} {bar} %{(ratio*100):.3f}")
 
 def update_progress():
     progress_bar("saving -",
@@ -60,6 +60,14 @@ def update_progress():
 def log_error(word, error):
     with open(error_log_file, "a", encoding="utf-8") as fp:
         fp.write(f"{word} ::\t{error}\n")
+
+def sanitize(word: str):
+    if any([it in word for it in "<>:\"/\\|?*"]):
+        log_error(word, "Has illegal characters for file names")
+    return (word.replace("%", "%25").replace("<", "%3C").replace(">", "%3E")
+                .replace(":", "%3A").replace("\"", "%22").replace("/", "%2F")
+                .replace("\\", "%5C").replace("|", "%7C").replace("?", "%3F")
+                .replace("*", "%2A"))
 
 def do_fetch(wordlist):
     global active_threads
@@ -80,7 +88,7 @@ def do_fetch(wordlist):
             print(f"ERROR({word}): {result}")
         else:
             successList.append((word,))
-            _path = path.join(SAVEDIR, "words", f"{quote(word)}.json")
+            _path = path.join(SAVEDIR, "words", f"{sanitize(word)}.json")
             with open(_path, "w", encoding="utf-8") as fp:
                 json.dump(result, fp, ensure_ascii=False)
 
