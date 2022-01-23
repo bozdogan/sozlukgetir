@@ -1,20 +1,15 @@
-import unittest
-from unittest.case import TestCase
-import urllib.request
-import pathlib
 import json
+import unittest
+import urllib.request
 
-from context import sozlukgetir
+from context import sozlukgetir, _url
 
 
-def _url(localpath):
-    return (pathlib.Path(__file__).parent.resolve()/localpath).as_uri()
+parsed_word_list_url = _url("./data/core/wordlist.result.json")
+dictionary_entry_template = _url("./data/core/word_") + "{madde}.sample.gts.json"
+spelling_entry_template = _url("./data/core/word_") + "{madde}.sample.yazim.json"
 
-parsed_word_list_url = _url("./data/wordlist.result.json")
-dictionary_entry_template = _url("./data/word_") + "{madde}.sample.gts.json"
-spelling_entry_template = _url("./data/word_") + "{madde}.sample.yazim.json"
-
-sozlukgetir.LOCATIONS["autocomplete"] = _url("./data/autocomplete.sample.json")  #"https://sozluk.gov.tr/assets/js/autocomplete.json"
+sozlukgetir.LOCATIONS["autocomplete"] = _url("./data/core/autocomplete.sample.json")  #"https://sozluk.gov.tr/assets/js/autocomplete.json"
 sozlukgetir.LOCATIONS["autocompleteSapka"] = ""  #"https://sozluk.gov.tr/assets/js/autocompleteSapka.json"
 sozlukgetir.LOCATIONS["gts"] = dictionary_entry_template  #"https://sozluk.gov.tr/gts?ara={madde}"
 sozlukgetir.LOCATIONS["yazim"] = spelling_entry_template  #"https://sozluk.gov.tr/yazim?ara={madde}"
