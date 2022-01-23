@@ -2,7 +2,6 @@ from urllib import request
 from urllib.error import URLError, HTTPError
 import urllib.parse
 import json
-import ssl
 
 LOCATIONS = {
     "autocomplete": "https://sozluk.gov.tr/autocomplete.json",
@@ -42,15 +41,3 @@ def fetch_details(word):
         result = {"error": e}
     
     return result
-
-if __name__ == "__main__":
-    ssl._create_default_https_context = ssl._create_unverified_context
-    print("Fetching autocomplete word list")
-    wordList = fetch_word_list()
-
-    print("WORDS::\n")
-    print(", ".join(wordList[:20]) + "\n  ...\n" + ", ".join(wordList[-10:]))
-    print()
-    
-    word_cikmak = fetch_details(wordList[19049])
-    print(word_cikmak)
