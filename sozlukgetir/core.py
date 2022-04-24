@@ -11,9 +11,14 @@ LOCATIONS = {
     "ses": "https://sozluk.gov.tr/ses/{seskod}.wav"
 }
 
+# NOTE(bora): TDK now forbids unfamiliar user agents.
+_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36"
+
 def fetch_word_list():
-    url=LOCATIONS["autocomplete"]
-    with request.urlopen(url) as res:
+    url = LOCATIONS["autocomplete"]
+    req = request.Request(url)
+    req.add_header("User-Agent", _USER_AGENT)
+    with request.urlopen(req) as res:
         data = json.loads(res.read())
         return list(map(lambda it: it["madde"], data))
 
@@ -23,7 +28,9 @@ def fetch_details(word):
     url_yazim = LOCATIONS["yazim"].format(madde=urllib.parse.quote(word, encoding="utf-8"))
     
     def _get(url, ignore_errors=False):
-        with request.urlopen(url) as res:
+        req = request.Request(url)
+        req.add_header("User-Agent", _USER_AGENT)
+        with request.urlopen(req) as res:
             data = json.loads(res.read())
             if not ignore_errors and "error" in data:  # NOTE: {'error': 'Sonuç bulunamadı'}
                 raise Exception("No such result")
